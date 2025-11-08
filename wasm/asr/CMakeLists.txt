@@ -50,7 +50,7 @@ if (NOT SHERPA_ONNX_WASM_ASR_SKIP_PRELOAD)
   string(APPEND MY_FLAGS "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets@. ")
 endif()
 
-string(APPEND MY_FLAGS " -sEXPORTED_RUNTIME_METHODS=['ccall','stringToUTF8','setValue','getValue','lengthBytesUTF8','UTF8ToString'] ")
+string(APPEND MY_FLAGS " -sEXPORTED_RUNTIME_METHODS=['ccall','stringToUTF8','setValue','getValue','lengthBytesUTF8','UTF8ToString','HEAPF32'] ")
 
 message(STATUS "MY_FLAGS: ${MY_FLAGS}")
 
