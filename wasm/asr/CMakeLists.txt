@@ -39,10 +39,6 @@ if (SHERPA_ONNX_WASM_ASR_EXPORT_ES6)
   string(APPEND MY_FLAGS " -sMODULARIZE=1 -sEXPORT_ES6=1 ")
 endif()
 
-if (SHERPA_ONNX_WASM_ASR_EMIT_TSD)
-  string(APPEND MY_FLAGS " --emit-tsd sherpa-onnx-wasm-main-asr.d.ts ")
-endif()
-
 string(APPEND MY_FLAGS " -sSTACK_SIZE=10485760 ") # 10MB
 string(APPEND MY_FLAGS " -sEXPORTED_FUNCTIONS=[_CopyHeap,_malloc,_free,${all_exported_functions}] ")
 
@@ -74,10 +70,6 @@ set(INSTALL_FILES
   "app-asr.js"
   "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-asr>/sherpa-onnx-wasm-main-asr.wasm"
 )
-
-if (SHERPA_ONNX_WASM_ASR_EMIT_TSD)
-  list(APPEND INSTALL_FILES "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-asr>/sherpa-onnx-wasm-main-asr.d.ts")
-endif()
 
 if (NOT SHERPA_ONNX_WASM_ASR_SKIP_PRELOAD)
   list(APPEND INSTALL_FILES "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-asr>/sherpa-onnx-wasm-main-asr.data")
