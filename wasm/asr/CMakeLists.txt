@@ -2,7 +2,7 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
   message(FATAL_ERROR "Please use ./build-wasm-simd-asr.sh to build for wasm ASR")
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/encoder.onnx")
+if(NOT SHERPA_ONNX_WASM_ASR_SKIP_PRELOAD AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/encoder.onnx")
   message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
 
