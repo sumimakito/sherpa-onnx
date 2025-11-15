@@ -2,7 +2,7 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
   message(FATAL_ERROR "Please use ./build-wasm-simd-vad.sh to build for wasm VAD")
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/silero_vad.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/tokens.txt")
+if(NOT SHERPA_ONNX_WASM_VAD_ASR_SKIP_PRELOAD AND (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/silero_vad.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/tokens.txt"))
   message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
 
@@ -51,9 +51,18 @@ list(JOIN mangled_exported_functions "," all_exported_functions)
 
 include_directories(${CMAKE_SOURCE_DIR})
 set(MY_FLAGS " -s FORCE_FILESYSTEM=1 -s INITIAL_MEMORY=512MB -s ALLOW_MEMORY_GROWTH=1")
+
+if (SHERPA_ONNX_WASM_VAD_ASR_EXPORT_ES6)
+  string(APPEND MY_FLAGS " -sMODULARIZE=1 -sEXPORT_ES6=1 ")
+endif()
+
 string(APPEND MY_FLAGS " -sSTACK_SIZE=10485760 ") # 10MB
 string(APPEND MY_FLAGS " -sEXPORTED_FUNCTIONS=[_CopyHeap,_malloc,_free,${all_exported_functions}] ")
-string(APPEND MY_FLAGS "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets@. ")
+
+if (NOT SHERPA_ONNX_WASM_VAD_ASR_SKIP_PRELOAD)
+  string(APPEND MY_FLAGS "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets@. ")
+endif()
+
 string(APPEND MY_FLAGS " -sEXPORTED_RUNTIME_METHODS=['ccall','stringToUTF8','setValue','getValue','lengthBytesUTF8','UTF8ToString'] ")
 
 message(STATUS "MY_FLAGS: ${MY_FLAGS}")
@@ -71,13 +80,19 @@ add_executable(sherpa-onnx-wasm-main-vad-asr sherpa-onnx-wasm-main-vad-asr.cc)
 target_link_libraries(sherpa-onnx-wasm-main-vad-asr sherpa-onnx-c-api)
 install(TARGETS sherpa-onnx-wasm-main-vad-asr DESTINATION bin/wasm/vad-asr)
 
+set(INSTALL_FILES
+  "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.js"
+  "index.html"
+  "app-vad-asr.js"
+  "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.wasm"
+)
+
+if (NOT SHERPA_ONNX_WASM_VAD_ASR_SKIP_PRELOAD)
+  list(APPEND INSTALL_FILES
+    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.data")
+endif()
+
 install(
-  FILES
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.js"
-    "index.html"
-    "app-vad-asr.js"
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.wasm"
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-vad-asr>/sherpa-onnx-wasm-main-vad-asr.data"
-  DESTINATION
-    bin/wasm/vad-asr
+  FILES ${INSTALL_FILES}
+  DESTINATION bin/wasm/vad-asr
 )
