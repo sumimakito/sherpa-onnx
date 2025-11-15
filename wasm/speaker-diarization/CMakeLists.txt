@@ -2,7 +2,7 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
   message(FATAL_ERROR "Please use ./build-wasm-simd-speaker-diarization.sh to build for WASM for speaker diarization")
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/segmentation.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/embedding.onnx")
+if(NOT SHERPA_ONNX_WASM_SD_SKIP_PRELOAD AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/segmentation.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/embedding.onnx")
   message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
 
@@ -57,14 +57,20 @@ add_executable(sherpa-onnx-wasm-main-speaker-diarization sherpa-onnx-wasm-main-s
 target_link_libraries(sherpa-onnx-wasm-main-speaker-diarization sherpa-onnx-c-api)
 install(TARGETS sherpa-onnx-wasm-main-speaker-diarization DESTINATION bin/wasm/speaker-diarization)
 
+set(INSTALL_FILES
+  "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.js"
+  "index.html"
+  "sherpa-onnx-speaker-diarization.js"
+  "app-speaker-diarization.js"
+  "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.wasm"
+)
+
+if (NOT SHERPA_ONNX_WASM_SD_SKIP_PRELOAD)
+  list(APPEND INSTALL_FILES
+    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.data")
+endif()
+
 install(
-  FILES
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.js"
-    "index.html"
-    "sherpa-onnx-speaker-diarization.js"
-    "app-speaker-diarization.js"
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.wasm"
-    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-main-speaker-diarization>/sherpa-onnx-wasm-main-speaker-diarization.data"
-  DESTINATION
-    bin/wasm/speaker-diarization
+  FILES ${INSTALL_FILES}
+  DESTINATION bin/wasm/speaker-diarization
 )
