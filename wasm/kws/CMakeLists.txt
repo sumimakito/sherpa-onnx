@@ -2,7 +2,7 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
     message(FATAL_ERROR "Please use ./build-wasm-simd-kws.sh to build for wasm KWS")
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/decoder-epoch-12-avg-2-chunk-16-left-64.onnx")
+if(NOT SHERPA_ONNX_WASM_KWS_SKIP_PRELOAD AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/decoder-epoch-12-avg-2-chunk-16-left-64.onnx")
     message(WARNING "${CMAKE_CURRENT_SOURCE_DIR}/assets/decoder-epoch-12-avg-2-chunk-16-left-64.onnx does not exist")
     message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
@@ -28,9 +28,18 @@ list(JOIN mangled_exported_functions "," all_exported_functions)
 
 include_directories(${CMAKE_SOURCE_DIR})
 set(MY_FLAGS "-s FORCE_FILESYSTEM=1 -s INITIAL_MEMORY=512MB -s ALLOW_MEMORY_GROWTH=1")
+
+if (SHERPA_ONNX_WASM_KWS_EXPORT_ES6)
+    string(APPEND MY_FLAGS " -sMODULARIZE=1 -sEXPORT_ES6=1 ")
+endif()
+
 string(APPEND MY_FLAGS " -sSTACK_SIZE=10485760 ")
 string(APPEND MY_FLAGS " -sEXPORTED_FUNCTIONS=[_CopyHeap,_malloc,_free,${all_exported_functions}] ")
-string(APPEND MY_FLAGS "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets@. ")
+
+if (NOT SHERPA_ONNX_WASM_KWS_SKIP_PRELOAD)
+    string(APPEND MY_FLAGS "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets@. ")
+endif()
+
 string(APPEND MY_FLAGS " -sEXPORTED_RUNTIME_METHODS=['ccall','stringToUTF8','setValue','getValue','lengthBytesUTF8','UTF8ToString'] ")
 
 message(STATUS "MY_FLAGS: ${MY_FLAGS}")
@@ -43,14 +52,20 @@ add_executable(sherpa-onnx-wasm-kws-main sherpa-onnx-wasm-main-kws.cc)
 target_link_libraries(sherpa-onnx-wasm-kws-main sherpa-onnx-c-api)
 install(TARGETS sherpa-onnx-wasm-kws-main DESTINATION bin/wasm)
 
+set(INSTALL_FILES
+    "sherpa-onnx-kws.js"
+    "app.js"
+    "index.html"
+    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.js"
+    "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.wasm"
+)
+
+if (NOT SHERPA_ONNX_WASM_KWS_SKIP_PRELOAD)
+    list(APPEND INSTALL_FILES
+        "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.data")
+endif()
+
 install(
-        FILES
-        "sherpa-onnx-kws.js"
-        "app.js"
-        "index.html"
-        "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.js"
-        "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.wasm"
-        "$<TARGET_FILE_DIR:sherpa-onnx-wasm-kws-main>/sherpa-onnx-wasm-kws-main.data"
-        DESTINATION
-        bin/wasm
+    FILES ${INSTALL_FILES}
+    DESTINATION bin/wasm
 )
