@@ -2,7 +2,8 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
   message(FATAL_ERROR "Please use ./build-wasm-simd-vad.sh to build for wasm VAD")
 endif()
 
-if(NOT SHERPA_ONNX_WASM_VAD_ASR_SKIP_PRELOAD AND (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/silero_vad.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/tokens.txt"))
+if(NOT SHERPA_ONNX_WASM_VAD_ASR_SKIP_PRELOAD AND 
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/silero_vad.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/tokens.txt"))
   message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
 

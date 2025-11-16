@@ -2,7 +2,8 @@ if(NOT $ENV{SHERPA_ONNX_IS_USING_BUILD_WASM_SH})
   message(FATAL_ERROR "Please use ./build-wasm-simd-speaker-diarization.sh to build for WASM for speaker diarization")
 endif()
 
-if(NOT SHERPA_ONNX_WASM_SD_SKIP_PRELOAD AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/segmentation.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/embedding.onnx")
+if(NOT SHERPA_ONNX_WASM_SD_SKIP_PRELOAD AND 
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/segmentation.onnx" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/embedding.onnx"))
   message(FATAL_ERROR "Please read ${CMAKE_CURRENT_SOURCE_DIR}/assets/README.md before you continue")
 endif()
 
